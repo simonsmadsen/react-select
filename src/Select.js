@@ -351,7 +351,7 @@ const Select = createClass({
 
 			// if the input is focused, ensure the menu is open
 			this.setState({
-				isOpen: true,
+				isOpen: false,
 				isPseudoFocused: false,
 			});
 		} else {
@@ -416,7 +416,7 @@ const Select = createClass({
 		}
 		this.setState({
 			isFocused: true,
-			isOpen: isOpen
+			isOpen: false
 		});
 		this._openAfterFocus = false;
 	},
@@ -453,8 +453,17 @@ const Select = createClass({
 			}
 		}
 
+
+		let input = this.input;
+		if (typeof input.getInput === 'function') {
+			// Get the actual DOM input if the ref is an <AutosizeInput /> component
+			input = input.getInput();
+		}
+
+		let options = this._visibleOptions = this.filterOptions(this.props.multi ? this.getValueArray(this.props.value) : null);
+
 		this.setState({
-			isOpen: true,
+			isOpen: options.length > 1 && this.state.inputValue !== '',
 			isPseudoFocused: false,
 			inputValue: newInputValue,
 		});
@@ -471,6 +480,7 @@ const Select = createClass({
 		}
 
 		switch (event.keyCode) {
+
 			case 8: // backspace
 				if (!this.state.inputValue && this.props.backspaceRemoves) {
 					event.preventDefault();
@@ -483,18 +493,35 @@ const Select = createClass({
 				}
 				this.selectFocusedOption();
 			return;
-			case 13: // enter
-				if (!this.state.isOpen) return;
+			case 32: // space
 				event.stopPropagation();
 				this.selectFocusedOption();
+			break;
+			case 13: // enter 13
+				if(this.state.isOpen){
+					event.stopPropagation();
+					this.selectFocusedOption();
+				}else if(this.inputValue !== ''){
+					event.stopPropagation();
+					this.selectFocusedOption();
+					document.serOnAdding();
+				}else{
+					if(document.serOnAdding){
+						document.serOnAdding();
+					}
+				}
 			break;
 			case 27: // escape
 				if (this.state.isOpen) {
 					this.closeMenu();
 					event.stopPropagation();
-				} else if (this.props.clearable && this.props.escapeClearsValue) {
+				} else if (this.props.clearable && this.props.escapeClearsValue && this.state.inputValue !== '') {
 					this.clearValue(event);
 					event.stopPropagation();
+				} else {
+					if(document.serOnCloseAdding){
+						document.serOnCloseAdding();
+					}
 				}
 			break;
 			case 38: // up
@@ -611,6 +638,7 @@ const Select = createClass({
 		if (this.props.multi) {
 			this.setState({
 				inputValue: '',
+				isOpen: false,
 				focusedIndex: null
 			}, () => {
 				this.addValue(value);
@@ -937,6 +965,10 @@ const Select = createClass({
 
 	filterOptions (excludeOptions) {
 		var filterValue = this.state.inputValue;
+
+	  if(filterValue.length < 2){
+			return [];
+		}
 		var options = this.props.options || [];
 		if (this.props.filterOptions) {
 			// Maintain backwards compatibility with boolean attribute
@@ -1068,10 +1100,12 @@ const Select = createClass({
 	render () {
 		let valueArray = this.getValueArray(this.props.value);
 		let options = this._visibleOptions = this.filterOptions(this.props.multi ? this.getValueArray(this.props.value) : null);
-		let isOpen = this.state.isOpen;
-		if (this.props.multi && !options.length && valueArray.length && !this.state.inputValue) isOpen = false;
-		const focusedOptionIndex = this.getFocusableOptionIndex(valueArray[0]);
 
+		let isOpen = this.state.isOpen;
+
+		if (this.props.multi && !options.length && valueArray.length && !this.state.inputValue) isOpen = false;
+
+		const focusedOptionIndex = this.getFocusableOptionIndex(valueArray[0]);
 		let focusedOption = null;
 		if (focusedOptionIndex !== null) {
 			focusedOption = this._focusedOption = options[focusedOptionIndex];

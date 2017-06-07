@@ -40,27 +40,6 @@ var CreatableDemo = createClass({
 					onChange={this.handleOnChange}
 					value={multi ? multiValue : value}
 				/>
-				<div className="hint">{this.props.hint}</div>
-				<div className="checkbox-list">
-					<label className="checkbox">
-						<input
-							type="radio"
-							className="checkbox-control"
-							checked={multi}
-							onChange={() => this.setState({ multi: true })}
-						/>
-						<span className="checkbox-label">Multiselect</span>
-					</label>
-					<label className="checkbox">
-						<input
-							type="radio"
-							className="checkbox-control"
-							checked={!multi}
-							onChange={() => this.setState({ multi: false })}
-						/>
-						<span className="checkbox-label">Single Value</span>
-					</label>
-				</div>
 			</div>
 		);
 	}

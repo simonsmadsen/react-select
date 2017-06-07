@@ -275,7 +275,7 @@ function newOptionCreator ({ label, labelKey, valueKey }) {
 };
 
 function promptTextCreator (label) {
-	return `Create option "${label}"`;
+	return label;
 }
 
 function shouldKeyDownEventCreateNewOption ({ keyCode }) {
